@@ -1,6 +1,15 @@
-import modules.souenergy
+#import modules.souenergy
+from flask import Flask, request
+from flask_cors import CORS
+import json
 
-    
+app = Flask(__name__)
+CORS(app)
+
+@app.route("/", methods=['POST'])
+def hello_world():
+  watts = request.json['watts']
+  return f'<p>Hello, {watts}!</p>'
 
 # text = navegador.find_element('xpath', '//*[@id="maincontent"]/div[2]/div/div[2]/span').text
 # print(text)
