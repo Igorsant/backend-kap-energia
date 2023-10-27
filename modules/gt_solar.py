@@ -1,5 +1,6 @@
 from modules import navegador
-
+from selenium.webdriver.common.by import By
+import time
 
 def visit_gtsolar(watts):
     elementos = [
@@ -89,16 +90,18 @@ def visit_gtsolar(watts):
         },
         {
             "name": "Cartao select",
-            "xpath": '//*[@id="app"]/div[2]/div/main/div/div/div/div/div/div[2]/div[1]/div[2]/div/div/div[1]/div/form/div[3]/div/select',
+            "xpath": '//*[@id="app"]/div[2]/div/main/div/div/div/div/div/div[2]/div[1]/div[2]/div/div/div[1]/div/form/div[2]/div/select',
             "script": "select",
             "value": "SIM"
         },
         {
             "name": "Numero de parcelas",
-            "xpath": '//*[@id="app"]/div[2]/div/main/div/div/div/div/div/div[2]/div[1]/div[2]/div/div/div[1]/div/form/div[4]/div/select',
+            "xpath": '//*[@id="app"]/div[2]/div/main/div/div/div/div/div/div[2]/div[1]/div[2]/div/div/div[1]/div/form/div[3]/div/select',
             "script": "select",
             "value": "21"
         }
     ]
 
-    navegador.execute_script("https://app.goldentecsolar.com.br/login", elementos)
+    nav = navegador.execute_script("https://app.goldentecsolar.com.br/login", elementos)
+    time.sleep(1)
+    return nav.find_element(By.XPATH, '//*[@id="orcfooter"]/div[1]/div[1]/div/p').text

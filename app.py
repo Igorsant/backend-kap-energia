@@ -8,9 +8,9 @@ CORS(app)
 
 
 @app.route("/", methods=["POST"])
-def hello_world():
+def best_price():
     watts = request.json["watts"]
 
-    gt_solar.visit_gtsolar(watts)
+    total = gt_solar.visit_gtsolar(watts)
     print(watts)
-    return f"<p>Hello, {watts}!</p>"
+    return f'{total}'
