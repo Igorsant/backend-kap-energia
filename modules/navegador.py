@@ -23,7 +23,7 @@ def set_chrome_options() -> Options:
     return chrome_options
 
 def execute_script(site, elementos):
-    navegador = webdriver.Chrome(options=set_chrome_options())
+    navegador = webdriver.Chrome()
     navegador.implicitly_wait(5)
     navegador.get(site)
 

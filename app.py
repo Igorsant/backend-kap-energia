@@ -16,6 +16,7 @@ def best_price():
     # return f'{total}'
     kwp_number = float(kwp.replace(",", "."))
     souenergy.visit_souenergy(kwp_number)
+    # gt_solar.visit_gtsolar(kwp_number)
     return ""
 
 @app.route("/", methods=["GET"])
