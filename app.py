@@ -9,14 +9,8 @@ CORS(app)
 
 @app.route("/", methods=["POST"])
 def best_price():
-    kwp = request.json["kwp"]
-
-    # total = gt_solar.visit_gtsolar(watts)
-    # print(watts)
-    # return f'{total}'
-    kwp_number = float(kwp.replace(",", "."))
-    souenergy.visit_souenergy(kwp_number)
-    # gt_solar.visit_gtsolar(kwp_number)
+    # souenergy.visit_souenergy(request.json)
+    gt_solar.visit_gtsolar(request.json)
     return ""
 
 @app.route("/", methods=["GET"])

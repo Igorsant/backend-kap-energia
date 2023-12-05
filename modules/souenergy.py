@@ -70,11 +70,11 @@ def visit_souenergy(kwp):
 def _get_best_panel(panels, kwp):
     panels.sort(key=lambda p:p["preco"])
     for panel in panels:
-        kwp_panel = float(panel["kwp"].replace(",", "."))
+        kwp_panel = get_kwp_value(panel["kwp"])
+        print("kwp_panel:", kwp_panel)
         if kwp_panel < kwp:
             continue
         if panel["date"] == None:
-            print(panel["preco"], panel_date)
             return panel
         time_numbers = panel["date"].split("/")
         print(time_numbers)
@@ -85,4 +85,7 @@ def _get_best_panel(panels, kwp):
             print(panel["preco"], panel_date)
             return panel
         
-        
+def get_kwp_value(kwp):
+    if "\n" in kwp:
+        return float(kwp.replace(",", ".").split("\n")[0])
+    return float(kwp.replace(",", "."))

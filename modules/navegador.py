@@ -23,9 +23,12 @@ def set_chrome_options() -> Options:
     return chrome_options
 
 def execute_script(site, elementos):
-    navegador = webdriver.Chrome()
+    chrome_options = Options()
+    chrome_options.add_argument("--start-maximized")
+    navegador = webdriver.Chrome(options=chrome_options)
     navegador.implicitly_wait(5)
-    navegador.get(site)
+    if not site == '':
+        navegador.get(site)
 
     for element in elementos:
         el = navegador.find_element(By.XPATH, element[By.XPATH])
