@@ -11,6 +11,7 @@ def visit_souenergy(kwp):
             "name": "Click para login",
             "xpath": '//*[@id="loginIconContainer"]/div[1]/span',
             "script": "click",
+            "shouldWait": True
         },
         {
             "name": "email",
@@ -37,44 +38,41 @@ def visit_souenergy(kwp):
         number = float(text.rstrip()[-8:-3].replace(",", ".").strip())
         if kwp <= number:
             board.click()
-            print("found")
             break
-        print(number)
-        print("tamanho boards", len(boards))
     
-    parent_panel = nav.find_element(By.XPATH, '//*[@id="product-options-wrapper"]/div/fieldset/div[2]/div/div')
-    list_panel = parent_panel.find_elements(By.CLASS_NAME, "choice")
-    panels = []
-    for panel in list_panel:
-        radio_button = panel.find_element(By.TAG_NAME, 'input')
-        radio_button.location_once_scrolled_into_view
-        radio_button.click()
-        try:
-            panels.append({
-                "radio": radio_button,
-                "kwp": nav.find_element(By.XPATH, '//*[@id="maincontent"]/div[2]/div/div[2]/span').text,
-                "preco": nav.find_element(By.XPATH, '//*[@id="product-price-2551"]/span').text,
-                "date": panel.find_element(By.CLASS_NAME, 'dataPrevendaItem').text
-            })
-        except NoSuchElementException:
-            panels.append({
-                "radio": radio_button,
-                "kwp": nav.find_element(By.XPATH, '//*[@id="maincontent"]/div[2]/div/div[2]/span').text,
-                "preco": nav.find_element(By.XPATH, '//*[@id="product-price-2551"]/span').text,
-                "date": None
-            })
-    best_panel = _get_best_panel(panels, kwp)["radio"]
-    best_panel.click()
-    print("Best panel was:", best_panel)
+    # parent_panel = nav.find_element(By.XPATH, '//*[@id="product-options-wrapper"]/div/fieldset/div[2]/div/div')
+    # list_panel = parent_panel.find_elements(By.CLASS_NAME, "choice")
+    # panels = []
+    # for panel in list_panel:
+    #     radio_button = panel.find_element(By.TAG_NAME, 'input')
+    #     radio_button.location_once_scrolled_into_view
+    #     radio_button.click()
+    #     try:
+    #         panels.append({
+    #             "radio": radio_button,
+    #             "kwp": nav.find_element(By.XPATH, '//*[@id="maincontent"]/div[2]/div/div[2]/span').text,
+    #             "preco": nav.find_element(By.XPATH, '//*[@id="product-price-2551"]/span').text,
+    #             "date": panel.find_element(By.CLASS_NAME, 'dataPrevendaItem').text
+    #         })
+    #     except NoSuchElementException:
+    #         panels.append({
+    #             "radio": radio_button,
+    #             "kwp": nav.find_element(By.XPATH, '//*[@id="maincontent"]/div[2]/div/div[2]/span').text,
+    #             "preco": nav.find_element(By.XPATH, '//*[@id="product-price-2551"]/span').text,
+    #             "date": None
+    #         })
+    # best_panel = _get_best_panel(panels, kwp)["radio"]
+    # best_panel.click()
+    # print("Best panel was:", best_panel)
 
 def _get_best_panel(panels, kwp):
     panels.sort(key=lambda p:p["preco"])
     for panel in panels:
-        kwp_panel = float(panel["kwp"].replace(",", "."))
+        kwp_panel = get_kwp_value(panel["kwp"])
+        print("kwp_panel:", kwp_panel)
         if kwp_panel < kwp:
             continue
         if panel["date"] == None:
-            print(panel["preco"], panel_date)
             return panel
         time_numbers = panel["date"].split("/")
         print(time_numbers)
@@ -85,4 +83,7 @@ def _get_best_panel(panels, kwp):
             print(panel["preco"], panel_date)
             return panel
         
-        
+def get_kwp_value(kwp):
+    if "\n" in kwp:
+        return float(kwp.replace(",", ".").split("\n")[0])
+    return float(kwp.replace(",", "."))

@@ -1,22 +1,19 @@
 from modules import gt_solar as gt_solar, souenergy as souenergy
 from flask import Flask, request
-from flask_cors import CORS
 import os
+from flask_cors import CORS
 
 app = Flask(__name__)
 CORS(app)
 
+@app.route("/gtsolar", methods=["POST"])
+def search_gtsolar():
+    gt_solar.visit_gtsolar(request.json)
+    return ""
 
-@app.route("/", methods=["POST"])
-def best_price():
-    kwp = request.json["kwp"]
-
-    # total = gt_solar.visit_gtsolar(watts)
-    # print(watts)
-    # return f'{total}'
-    kwp_number = float(kwp.replace(",", "."))
-    souenergy.visit_souenergy(kwp_number)
-    # gt_solar.visit_gtsolar(kwp_number)
+@app.route("/souenergy", methods=["POST"])
+def search_souenergy():
+    souenergy.visit_souenergy(request.json)
     return ""
 
 @app.route("/", methods=["GET"])
