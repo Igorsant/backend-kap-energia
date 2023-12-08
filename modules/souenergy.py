@@ -5,7 +5,7 @@ import os
 from datetime import datetime, timedelta
 from selenium.common.exceptions import NoSuchElementException
 
-def visit_souenergy(kwp):
+def visit_souenergy(formValues):
     elementos = [
         {
             "name": "Click para login",
@@ -36,10 +36,33 @@ def visit_souenergy(kwp):
     for board in boards:
         text = board.text
         number = float(text.rstrip()[-8:-3].replace(",", ".").strip())
-        if kwp <= number:
+        if formValues["watt"] <= number:
             board.click()
             break
     
+    cabo_ca = nav.find_element(By.XPATH, '//*[@id="bundle-option-14656"]')
+    nav.execute_script("arguments[0].scrollIntoView();", cabo_ca)
+    cabo_ca.click()
+
+    aterramento = nav.find_element(By.XPATH, '//*[@id="bundle-option-14657"]')
+    nav.execute_script("arguments[0].scrollIntoView();", aterramento)
+    aterramento.click()
+
+    kit = nav.find_element(By.XPATH, '//*[@id="bundle-option-14655"]')
+    nav.execute_script("arguments[0].scrollIntoView();", kit)
+    kit.click()
+
+    if "mini-trilho" in formValues["roof"]:
+        minitrilho = nav.find_element(By.XPATH, '//*[@id="bundle-option-14654-93624"]')
+        minitrilho.click()
+    if "fibrocimento" in formValues["roof"]:
+        fibrocimento = nav.find_element(By.XPATH, '//*[@id="bundle-option-14654-92404"]')
+        fibrocimento.click()
+    if "laje" in formValues["roof"]:
+        laje = nav.find_element(By.XPATH, '//*[@id="bundle-option-14663-70584"]')
+        laje.click()
+    preco = nav.find_element(By.XPATH, '//*[@id="product-price-2551"]/span')
+    return preco.text
     # parent_panel = nav.find_element(By.XPATH, '//*[@id="product-options-wrapper"]/div/fieldset/div[2]/div/div')
     # list_panel = parent_panel.find_elements(By.CLASS_NAME, "choice")
     # panels = []

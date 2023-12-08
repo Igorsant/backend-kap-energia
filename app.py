@@ -8,13 +8,11 @@ CORS(app)
 
 @app.route("/gtsolar", methods=["POST"])
 def search_gtsolar():
-    gt_solar.visit_gtsolar(request.json)
-    return ""
+    return gt_solar.visit_gtsolar(request.json)
 
 @app.route("/souenergy", methods=["POST"])
 def search_souenergy():
-    souenergy.visit_souenergy(request.json)
-    return ""
+    return souenergy.visit_souenergy(request.json)
 
 @app.route("/", methods=["GET"])
 def hello_heroku():
