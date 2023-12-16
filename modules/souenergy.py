@@ -1,15 +1,19 @@
 from modules import navegador
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 import time
 import os
 from datetime import datetime, timedelta
 from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 def visit_souenergy(formValues):
     elementos = [
         {
             "name": "Click para login",
-            "xpath": '//*[@id="loginIconContainer"]/div[1]/span',
+            "xpath": '//*[@id="loginIconContainer"]/div[1]',
             "script": "click",
             "shouldWait": True
         },
@@ -29,41 +33,48 @@ def visit_souenergy(formValues):
     ]
 
     nav = navegador.execute_script("https://souenergy.com.br", elementos)
+    
     time.sleep(3)
-    nav.get("https://souenergy.com.br/inversores-e-microinversores/solplanet.html")
-    boards = nav.find_elements(By.CLASS_NAME, "product-item-link")
+    actions = ActionChains(nav)
+    compre_por_marca = nav.find_element(By.XPATH, '//*[@id="ui-id-3"]')
+    actions.move_to_element(compre_por_marca).perform()
+    nav.find_element(By.XPATH, '//*[@id="ui-id-15"]').click()
 
+    boards = nav.find_elements(By.XPATH, '//*[@id="maincontent"]/div[3]/div[1]/div[3]/ol/li')
     for board in boards:
-        text = board.text
-        number = float(text.rstrip()[-8:-3].replace(",", ".").strip())
+        product_link = board.find_element(By.CLASS_NAME, 'product-item-link')
+        text = product_link.text
+        number = float(text.split(' ')[-1].replace('kWp', '').replace(",", "."))
         if formValues["watt"] <= number:
+            nav.execute_script("arguments[0].scrollIntoView();", board)
             board.click()
             break
     
-    cabo_ca = nav.find_element(By.XPATH, '//*[@id="bundle-option-14656"]')
+    cabo_ca = nav.find_element(By.XPATH, '//*[@id="product-options-wrapper"]/div/fieldset/div[7]/div[1]/div/div[1]/label/div')
     nav.execute_script("arguments[0].scrollIntoView();", cabo_ca)
     cabo_ca.click()
-
-    aterramento = nav.find_element(By.XPATH, '//*[@id="bundle-option-14657"]')
+    
+    aterramento = nav.find_element(By.XPATH, '//*[@id="product-options-wrapper"]/div/fieldset/div[9]/div[1]/div/div[1]/label/div')
     nav.execute_script("arguments[0].scrollIntoView();", aterramento)
     aterramento.click()
 
-    kit = nav.find_element(By.XPATH, '//*[@id="bundle-option-14655"]')
+    kit = nav.find_element(By.XPATH, '//*[@id="product-options-wrapper"]/div/fieldset/div[11]/div[1]/div/div[1]/label/div')
     nav.execute_script("arguments[0].scrollIntoView();", kit)
     kit.click()
 
     if "mini-trilho" in formValues["roof"]:
-        minitrilho = nav.find_element(By.XPATH, '//*[@id="bundle-option-14654-93624"]')
+        minitrilho = nav.find_element(By.XPATH, '//*[@id="product-options-wrapper"]/div/fieldset/div[11]/div[1]/div/div[14]/label/div/span/span[1]')
         minitrilho.click()
     if "fibrocimento" in formValues["roof"]:
-        fibrocimento = nav.find_element(By.XPATH, '//*[@id="bundle-option-14654-92404"]')
+        fibrocimento = nav.find_element(By.XPATH, '//*[@id="product-options-wrapper"]/div/fieldset/div[11]/div[1]/div/div[2]/label/div/span/span[1]')
         fibrocimento.click()
     if "laje" in formValues["roof"]:
-        laje = nav.find_element(By.XPATH, '//*[@id="bundle-option-14663-70584"]')
+        laje = nav.find_element(By.XPATH, '//*[@id="product-options-wrapper"]/div/fieldset/div[13]/div/div/div[1]/label/span/span')
         laje.click()
-    preco = nav.find_element(By.XPATH, '//*[@id="product-price-2551"]/span')
+    preco = nav.find_element(By.XPATH, '/html/body/div[2]/main/div[2]/div/div[1]/div[3]/div/form/div[3]/div/div/div/div/div[3]/p/span/span/span')
+    
     return preco.text
-    # parent_panel = nav.find_element(By.XPATH, '//*[@id="product-options-wrapper"]/div/fieldset/div[2]/div/div')
+    # # parent_panel = nav.find_element(By.XPATH, '//*[@id="product-options-wrapper"]/div/fieldset/div[2]/div/div')
     # list_panel = parent_panel.find_elements(By.CLASS_NAME, "choice")
     # panels = []
     # for panel in list_panel:

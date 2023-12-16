@@ -57,7 +57,7 @@ def visit_gtsolar(formValues):
 
     dimensionar_button = nav.find_element(By.XPATH, '//*[@id="app"]/div[2]/div/main/div/div/div/div/div/div[2]/div[1]/div[2]/div/div/button')
     nav.execute_script("arguments[0].scrollIntoView();", dimensionar_button)
-    time.sleep(10)
+    
     dimensionar_button.click()
     time.sleep(2)
     componentes_tab = nav.find_element(By.XPATH, '//*[@id="app"]/div[2]/div/main/div/div/div/div/div/div[2]/div[1]/div[1]/button[2]')
@@ -66,9 +66,12 @@ def visit_gtsolar(formValues):
     servicos = nav.find_element(By.XPATH, '//*[@id="app"]/div[2]/div/main/div/div/div/div/div/div[2]/div[1]/div[1]/button[3]')
     servicos.click()
 
+    time.sleep(1)
     cartao_select = nav.find_element(By.XPATH, '//*[@id="app"]/div[2]/div/main/div/div/div/div/div/div[2]/div[1]/div[2]/div/div/div[1]/div/form/div[2]/div/select')
     cartao_select.click()
     Select(cartao_select).select_by_value(formValues["cartao"])
+
+    time.sleep(1)
     parcelas = nav.find_element(By.XPATH, '//*[@id="app"]/div[2]/div/main/div/div/div/div/div/div[2]/div[1]/div[2]/div/div/div[1]/div/form/div[3]/div/select')
     Select(parcelas).select_by_value("21")
 

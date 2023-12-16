@@ -3,6 +3,8 @@ from selenium.webdriver.common.by import By
 import time
 from selenium.webdriver.support.select import Select
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 def set_chrome_options() -> Options:
     """
@@ -26,14 +28,13 @@ def execute_script(site, elementos):
     chrome_options = Options()
     chrome_options.add_argument("--start-maximized")
     navegador = webdriver.Chrome(options=chrome_options)
-    navegador.implicitly_wait(5)
+    wait = WebDriverWait(navegador, timeout=10)
+    
     if not site == '':
         navegador.get(site)
-
+        wait.until(EC.presence_of_element_located((By.XPATH, elementos[0][By.XPATH])))
     for element in elementos:
-        el = navegador.find_element(By.XPATH, element[By.XPATH])
-        if element.get("shouldWait"):
-            time.sleep(3)
+        el = wait.until(EC.element_to_be_clickable((By.XPATH, element[By.XPATH])))
         if element["script"] == "click":
             el.click()
         if element["script"] == "type":
