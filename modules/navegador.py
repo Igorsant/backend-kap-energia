@@ -25,8 +25,8 @@ def set_chrome_options() -> Options:
     return chrome_options
 
 def execute_script(site = '', elementos = []):
-    chrome_options = set_chrome_options()
-    # chrome_options = Options()
+    # chrome_options = set_chrome_options()
+    chrome_options = Options()
     chrome_options.add_argument("--start-maximized")
     navegador = webdriver.Chrome(options=chrome_options)
     wait = WebDriverWait(navegador, timeout=10)
