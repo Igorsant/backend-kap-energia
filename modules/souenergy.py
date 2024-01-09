@@ -12,24 +12,24 @@ from selenium.webdriver.support import expected_conditions as EC
 def visit_souenergy(formValues):
     elementos = [
         {
-            "name": "Click para login",
             "xpath": '//*[@id="loginIconContainer"]/div[1]',
             "script": "click",
             "shouldWait": True
         },
         {
-            "name": "email",
             "xpath": '//*[@id="email"]',
             "script": "type",
             "value": os.getenv('SOU_ENERGY_EMAIL'),
         },
         {
-            "name": "pass",
             "xpath": '//*[@id="pass"]',
             "script": "type",
             "value": os.getenv('SOU_ENERGY_PASS'),
         },
-        {"name": "enter button", "xpath": '//*[@id="send2"]', "script": "click"},
+        {
+            "xpath": '//*[@id="send2"]',
+            "script": "click"
+        }
     ]
 
     nav = navegador.execute_script("https://souenergy.com.br", elementos)
@@ -49,6 +49,10 @@ def visit_souenergy(formValues):
             nav.execute_script("arguments[0].scrollIntoView();", board)
             board.click()
             break
+    
+    best_panel = _get_best_panel(nav, formValues["watt"])["radio"]
+    best_panel.click()
+    print("Best panel was:", best_panel.text)
     
     cabo_ca = nav.find_element(By.XPATH, '//*[@id="product-options-wrapper"]/div/fieldset/div[7]/div[1]/div/div[1]/label/div')
     nav.execute_script("arguments[0].scrollIntoView();", cabo_ca)
@@ -74,32 +78,32 @@ def visit_souenergy(formValues):
     preco = nav.find_element(By.XPATH, '/html/body/div[2]/main/div[2]/div/div[1]/div[3]/div/form/div[3]/div/div/div/div/div[3]/p/span/span/span')
     
     return preco.text
-    # # parent_panel = nav.find_element(By.XPATH, '//*[@id="product-options-wrapper"]/div/fieldset/div[2]/div/div')
-    # list_panel = parent_panel.find_elements(By.CLASS_NAME, "choice")
-    # panels = []
-    # for panel in list_panel:
-    #     radio_button = panel.find_element(By.TAG_NAME, 'input')
-    #     radio_button.location_once_scrolled_into_view
-    #     radio_button.click()
-    #     try:
-    #         panels.append({
-    #             "radio": radio_button,
-    #             "kwp": nav.find_element(By.XPATH, '//*[@id="maincontent"]/div[2]/div/div[2]/span').text,
-    #             "preco": nav.find_element(By.XPATH, '//*[@id="product-price-2551"]/span').text,
-    #             "date": panel.find_element(By.CLASS_NAME, 'dataPrevendaItem').text
-    #         })
-    #     except NoSuchElementException:
-    #         panels.append({
-    #             "radio": radio_button,
-    #             "kwp": nav.find_element(By.XPATH, '//*[@id="maincontent"]/div[2]/div/div[2]/span').text,
-    #             "preco": nav.find_element(By.XPATH, '//*[@id="product-price-2551"]/span').text,
-    #             "date": None
-    #         })
-    # best_panel = _get_best_panel(panels, kwp)["radio"]
-    # best_panel.click()
-    # print("Best panel was:", best_panel)
+    
+    
 
-def _get_best_panel(panels, kwp):
+def _get_best_panel(nav, kwp):
+    parent_panel = nav.find_element(By.XPATH, '//*[@id="product-options-wrapper"]/div/fieldset/div[2]/div/div')
+    list_panel = parent_panel.find_elements(By.CLASS_NAME, "choice")
+    panels = []
+    for panel in list_panel:
+        radio_button = panel.find_element(By.TAG_NAME, 'input')
+        radio_button.location_once_scrolled_into_view
+        radio_button.click()
+        try:
+            panels.append({
+                "radio": radio_button,
+                "kwp": nav.find_element(By.XPATH, '//*[@id="maincontent"]/div[2]/div/div[2]/span').text,
+                "preco": nav.find_element(By.XPATH, '//*[@id="bundleSummary"]/div/div/div/div/div[3]/p/span').text,
+                "date": panel.find_element(By.CLASS_NAME, 'dataPrevendaItem').text
+            })
+        except NoSuchElementException:
+            panels.append({
+                "radio": radio_button,
+                "kwp": nav.find_element(By.XPATH, '//*[@id="maincontent"]/div[2]/div/div[2]/span').text,
+                "preco": nav.find_element(By.XPATH, '//*[@id="bundleSummary"]/div/div/div/div/div[3]/p/span').text,
+                
+                "date": None
+            })
     panels.sort(key=lambda p:p["preco"])
     for panel in panels:
         kwp_panel = get_kwp_value(panel["kwp"])

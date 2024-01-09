@@ -7,51 +7,43 @@ from selenium.webdriver.support.select import Select
 def visit_gtsolar(formValues):
     elementos = [
         {
-            "name": "email",
             "xpath": '//*[@id="email"]',
             "script": "type",
             "value": os.getenv('GT_SOLAR_EMAIL'),
         },
         {
-            "name": "pass",
             "xpath": '//*[@id="password"]',
             "script": "type",
             "value": os.getenv('GT_SOLAR_PASS'),
         },
         {
-            "name": "enter button",
             "xpath": '//*[@id="app"]/div[2]/div/main/div/div/div[1]/div[2]/div[1]/div/form/div[4]/button',
             "script": "click",
         },
         {
-            "name": "orcamento",
             "xpath": '//*[@id="app"]/div[2]/nav/div/div[3]/div/ul/li[3]/a',
             "script": "click",
         },
         {
-            "name": "watt",
             "xpath": '//*[@id="app"]/div[2]/div/main/div/div/div/div/div/div[2]/div[1]/div[2]/div/div/div[2]/div[1]/input',
             "script": "type",
             "value": formValues["watt"],
         },
         {
-            "name": "topologia",
             "xpath": '//*[@id="app"]/div[2]/div/main/div/div/div/div/div/div[2]/div[1]/div[2]/div/div/div[2]/div[2]/select',
             "script": "select",
             "value": "tradicional",
         },
         {
-            "name": "Classificacao da rede",
             "xpath": '//*[@id="app"]/div[2]/div/main/div/div/div/div/div/div[2]/div[1]/div[2]/div/div/div[2]/div[3]/select',
             "script": "select",
             "value": formValues["classification"],
         },
         {
-            "name": "Onde sera instalado",
             "xpath": '//*[@id="app"]/div[2]/div/main/div/div/div/div/div/div[2]/div[1]/div[2]/div/div/div[4]/form/form/div/div/select',
             "script": "select",
             "value": formValues["roof"]
-        },
+        }
     ]
     nav = navegador.execute_script("https://app.goldentecsolar.com.br/login", elementos)
 
