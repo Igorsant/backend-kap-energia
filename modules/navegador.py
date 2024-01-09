@@ -32,9 +32,11 @@ def execute_script(site = '', elementos = []):
     navegador = webdriver.Chrome(options=chrome_options)
     wait = WebDriverWait(navegador, timeout=10)
     
+    print("navegador criado")
     if not site == '':
         navegador.get(site)
         wait.until(EC.presence_of_element_located((By.XPATH, elementos[0][By.XPATH])))
+        print("site visitado")
     for element in elementos:
         el = wait.until(EC.element_to_be_clickable((By.XPATH, element[By.XPATH])))
         if element["script"] == "click":
