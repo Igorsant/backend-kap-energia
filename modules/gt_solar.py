@@ -27,7 +27,7 @@ def visit_gtsolar(formValues):
         {
             "xpath": '//*[@id="app"]/div[2]/div/main/div/div/div/div/div/div[2]/div[1]/div[2]/div/div/div[2]/div[1]/input',
             "script": "type",
-            "value": formValues["watt"],
+            "value": float(formValues["watt"])*100,
         },
         {
             "xpath": '//*[@id="app"]/div[2]/div/main/div/div/div/div/div/div[2]/div[1]/div[2]/div/div/div[2]/div[2]/select',

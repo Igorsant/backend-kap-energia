@@ -4,7 +4,7 @@ from selenium.webdriver.common.keys import Keys
 import time
 import os
 from datetime import datetime, timedelta
-from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import NoSuchElementException, ElementClickInterceptedException
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -29,6 +29,10 @@ def visit_souenergy(formValues):
         {
             "xpath": '//*[@id="send2"]',
             "script": "click"
+        },
+        {
+            "xpath": '/html/body/div[1]/div/a',
+            "script": "click"
         }
     ]
 
@@ -47,9 +51,9 @@ def visit_souenergy(formValues):
         number = float(text.split(' ')[-1].replace('kWp', '').replace(",", "."))
         if formValues["watt"] <= number:
             nav.execute_script("arguments[0].scrollIntoView();", board)
-            board.click()
+            nav.execute_script("arguments[0].click();", product_link)
             break
-    
+
     best_panel = _get_best_panel(nav, formValues["watt"])["radio"]
     best_panel.click()
     print("Best panel was:", best_panel.text)
@@ -75,7 +79,7 @@ def visit_souenergy(formValues):
     if "laje" in formValues["roof"]:
         laje = nav.find_element(By.XPATH, '//*[@id="product-options-wrapper"]/div/fieldset/div[13]/div/div/div[1]/label/span/span')
         laje.click()
-    preco = nav.find_element(By.XPATH, '/html/body/div[2]/main/div[2]/div/div[1]/div[3]/div/form/div[3]/div/div/div/div/div[3]/p/span/span/span')
+    preco = nav.find_element(By.XPATH, '//*[@id="bundleSummary"]/div/div/div/div/div[3]/p/span')
     
     return preco.text
     
