@@ -4,7 +4,7 @@ from selenium.webdriver.common.keys import Keys
 import time
 import os
 from datetime import datetime, timedelta
-from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import NoSuchElementException, ElementClickInterceptedException
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -29,6 +29,10 @@ def visit_souenergy(formValues):
         {
             "xpath": '//*[@id="send2"]',
             "script": "click"
+        },
+        {
+            "xpath": '/html/body/div[1]/div/a',
+            "script": "click"
         }
     ]
 
@@ -47,9 +51,9 @@ def visit_souenergy(formValues):
         number = float(text.split(' ')[-1].replace('kWp', '').replace(",", "."))
         if formValues["watt"] <= number:
             nav.execute_script("arguments[0].scrollIntoView();", board)
-            board.click()
+            nav.execute_script("arguments[0].click();", product_link)
             break
-    
+
     best_panel = _get_best_panel(nav, formValues["watt"])["radio"]
     best_panel.click()
     print("Best panel was:", best_panel.text)
@@ -58,11 +62,11 @@ def visit_souenergy(formValues):
     nav.execute_script("arguments[0].scrollIntoView();", cabo_ca)
     cabo_ca.click()
     
-    aterramento = nav.find_element(By.XPATH, '//*[@id="product-options-wrapper"]/div/fieldset/div[9]/div[1]/div/div[1]/label/div')
+    aterramento = nav.find_element(By.XPATH, '//*[@id="product-options-wrapper"]/div/fieldset/div[8]/div[1]/div/div[1]/label/div')
     nav.execute_script("arguments[0].scrollIntoView();", aterramento)
     aterramento.click()
 
-    kit = nav.find_element(By.XPATH, '//*[@id="product-options-wrapper"]/div/fieldset/div[11]/div[1]/div/div[1]/label/div')
+    kit = nav.find_element(By.XPATH, '//*[@id="product-options-wrapper"]/div/fieldset/div[9]/div[1]/div/div[1]/label/div')
     nav.execute_script("arguments[0].scrollIntoView();", kit)
     kit.click()
 
@@ -70,16 +74,14 @@ def visit_souenergy(formValues):
         minitrilho = nav.find_element(By.XPATH, '//*[@id="product-options-wrapper"]/div/fieldset/div[11]/div[1]/div/div[14]/label/div/span/span[1]')
         minitrilho.click()
     if "fibrocimento" in formValues["roof"]:
-        fibrocimento = nav.find_element(By.XPATH, '//*[@id="product-options-wrapper"]/div/fieldset/div[11]/div[1]/div/div[2]/label/div/span/span[1]')
+        fibrocimento = nav.find_element(By.XPATH, '//*[@id="product-options-wrapper"]/div/fieldset/div[10]/div[1]/div/div[2]/label/div/span/span[1]')
         fibrocimento.click()
     if "laje" in formValues["roof"]:
         laje = nav.find_element(By.XPATH, '//*[@id="product-options-wrapper"]/div/fieldset/div[13]/div/div/div[1]/label/span/span')
         laje.click()
-    preco = nav.find_element(By.XPATH, '/html/body/div[2]/main/div[2]/div/div[1]/div[3]/div/form/div[3]/div/div/div/div/div[3]/p/span/span/span')
-    
+    preco = nav.find_element(By.XPATH, '//*[@id="bundleSummary"]/div/div/div/div/div[3]/p/span')
+
     return preco.text
-    
-    
 
 def _get_best_panel(nav, kwp):
     parent_panel = nav.find_element(By.XPATH, '//*[@id="product-options-wrapper"]/div/fieldset/div[2]/div/div')
