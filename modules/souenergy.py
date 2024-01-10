@@ -62,11 +62,11 @@ def visit_souenergy(formValues):
     nav.execute_script("arguments[0].scrollIntoView();", cabo_ca)
     cabo_ca.click()
     
-    aterramento = nav.find_element(By.XPATH, '//*[@id="product-options-wrapper"]/div/fieldset/div[9]/div[1]/div/div[1]/label/div')
+    aterramento = nav.find_element(By.XPATH, '//*[@id="product-options-wrapper"]/div/fieldset/div[8]/div[1]/div/div[1]/label/div')
     nav.execute_script("arguments[0].scrollIntoView();", aterramento)
     aterramento.click()
 
-    kit = nav.find_element(By.XPATH, '//*[@id="product-options-wrapper"]/div/fieldset/div[11]/div[1]/div/div[1]/label/div')
+    kit = nav.find_element(By.XPATH, '//*[@id="product-options-wrapper"]/div/fieldset/div[9]/div[1]/div/div[1]/label/div')
     nav.execute_script("arguments[0].scrollIntoView();", kit)
     kit.click()
 
@@ -74,16 +74,14 @@ def visit_souenergy(formValues):
         minitrilho = nav.find_element(By.XPATH, '//*[@id="product-options-wrapper"]/div/fieldset/div[11]/div[1]/div/div[14]/label/div/span/span[1]')
         minitrilho.click()
     if "fibrocimento" in formValues["roof"]:
-        fibrocimento = nav.find_element(By.XPATH, '//*[@id="product-options-wrapper"]/div/fieldset/div[11]/div[1]/div/div[2]/label/div/span/span[1]')
+        fibrocimento = nav.find_element(By.XPATH, '//*[@id="product-options-wrapper"]/div/fieldset/div[10]/div[1]/div/div[2]/label/div/span/span[1]')
         fibrocimento.click()
     if "laje" in formValues["roof"]:
         laje = nav.find_element(By.XPATH, '//*[@id="product-options-wrapper"]/div/fieldset/div[13]/div/div/div[1]/label/span/span')
         laje.click()
     preco = nav.find_element(By.XPATH, '//*[@id="bundleSummary"]/div/div/div/div/div[3]/p/span')
-    
+
     return preco.text
-    
-    
 
 def _get_best_panel(nav, kwp):
     parent_panel = nav.find_element(By.XPATH, '//*[@id="product-options-wrapper"]/div/fieldset/div[2]/div/div')
