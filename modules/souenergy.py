@@ -49,47 +49,73 @@ def visit_souenergy(formValues):
         product_link = board.find_element(By.CLASS_NAME, 'product-item-link')
         text = product_link.text
         number = float(text.split(' ')[-1].replace('kWp', '').replace(",", "."))
-        if formValues["watt"] <= number:
+        if formValues["kwp"] <= number:
             nav.execute_script("arguments[0].scrollIntoView();", board)
             nav.execute_script("arguments[0].click();", product_link)
             break
 
-    best_panel = _get_best_panel(nav, formValues["watt"])["radio"]
+    nav.execute_script('document.querySelector(".block-bundle-summary").style.display="none"')
+
+    best_panel = _get_best_panel(nav, formValues["kwp"])["radio"]
+    nav.execute_script("arguments[0].scrollIntoView();", best_panel)
     best_panel.click()
     print("Best panel was:", best_panel.text)
     
-    cabo_ca = nav.find_element(By.XPATH, '//*[@id="product-options-wrapper"]/div/fieldset/div[7]/div[1]/div/div[1]/label/div')
-    nav.execute_script("arguments[0].scrollIntoView();", cabo_ca)
-    cabo_ca.click()
-    
-    aterramento = nav.find_element(By.XPATH, '//*[@id="product-options-wrapper"]/div/fieldset/div[8]/div[1]/div/div[1]/label/div')
-    nav.execute_script("arguments[0].scrollIntoView();", aterramento)
-    aterramento.click()
+    # protecao cc
+    scroll_click_element(nav, '//*[@id="product-options-wrapper"]/div/fieldset/div[3]/div[1]/div/div[1]/label/div/span')
 
-    kit = nav.find_element(By.XPATH, '//*[@id="product-options-wrapper"]/div/fieldset/div[9]/div[1]/div/div[1]/label/div')
-    nav.execute_script("arguments[0].scrollIntoView();", kit)
-    kit.click()
+    # cabo ca
+    scroll_click_element(nav, '//*[@id="product-options-wrapper"]/div/fieldset/div[7]/div[1]/div/div[1]/label/div')
+    
+    # aterramento
+    scroll_click_element(nav, '//*[@id="product-options-wrapper"]/div/fieldset/div[8]/div[1]/div/div[1]/label/div')
+
+    #kit
+    scroll_click_element(nav, '//*[@id="product-options-wrapper"]/div/fieldset/div[9]/div[1]/div/div[1]/label/div')
 
     if "mini-trilho" in formValues["roof"]:
-        minitrilho = nav.find_element(By.XPATH, '//*[@id="product-options-wrapper"]/div/fieldset/div[11]/div[1]/div/div[14]/label/div/span/span[1]')
+        minitrilho = nav.find_element(By.XPATH, '//span[text()="MINITRILHO EM PRFV 25cm PARA TELHADO METÁLICO - 45m/s - SOU ENERGY (GARANTIA - 25 ANOS)"]')
         minitrilho.click()
+        print("mini-trilho escolhido")
     if "fibrocimento" in formValues["roof"]:
-        fibrocimento = nav.find_element(By.XPATH, '//*[@id="product-options-wrapper"]/div/fieldset/div[10]/div[1]/div/div[2]/label/div/span/span[1]')
+        fibrocimento = nav.find_element(By.XPATH, '//span[text()="PRISIONEIRO PARA MADEIRA COM PERFIL EM PRFV 2,40m P/ TELHADOS C/ TELHAS CERÂMICAS|METÁLICAS|FIBROCIMENTO - 45m/s - SOU ENERGY (GARANTIA - 12 ANOS)"]')
         fibrocimento.click()
-    if "laje" in formValues["roof"]:
-        laje = nav.find_element(By.XPATH, '//*[@id="product-options-wrapper"]/div/fieldset/div[13]/div/div/div[1]/label/span/span')
+        print("fibrocimento escolhido")
+    if "Laje" in formValues["roof"]:
+        scroll_click_element(nav, '//*[@id="product-options-wrapper"]/div/fieldset/div[10]/div[1]/div/div[1]/label/div/span')
+        laje = nav.find_element(By.XPATH, '//span[text()="KIT DE LAJE/SOLO P/ 4 MÓDULOS EM RETRATO"]')
         laje.click()
+        print("laje escolhido")
+
+    nav.execute_script('document.querySelector(".block-bundle-summary").style.display="block"')
     preco = nav.find_element(By.XPATH, '//*[@id="bundleSummary"]/div/div/div/div/div[3]/p/span')
 
-    return preco.text
+    summary = nav.find_element(By.XPATH, '//*[@id="bundle-summary"]/ul')
+    summary_infos = summary.find_elements(By.TAG_NAME, 'li')
+
+    response_dict = {}
+    for info in summary_infos:
+        values = info.text.split('\n')
+        print(values[0], '--->', values[1])
+        response_dict[values[0]] = values[1]
+    response_dict['preco:'] = preco.text
+
+    # time.sleep(10)
+    return response_dict
+
+def scroll_click_element(nav, xpath):
+    element = nav.find_element(By.XPATH, xpath)
+    nav.execute_script("arguments[0].scrollIntoView();", element)
+    element.click()
 
 def _get_best_panel(nav, kwp):
     parent_panel = nav.find_element(By.XPATH, '//*[@id="product-options-wrapper"]/div/fieldset/div[2]/div/div')
+    nav.execute_script("arguments[0].scrollIntoView();", parent_panel)
     list_panel = parent_panel.find_elements(By.CLASS_NAME, "choice")
     panels = []
     for panel in list_panel:
         radio_button = panel.find_element(By.TAG_NAME, 'input')
-        radio_button.location_once_scrolled_into_view
+        nav.execute_script("arguments[0].scrollIntoView();", radio_button)
         radio_button.click()
         try:
             panels.append({

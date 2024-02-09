@@ -16,7 +16,6 @@ def search_gtsolar():
 @app.route("/souenergy", methods=["POST"])
 def search_souenergy():
     valor = souenergy.visit_souenergy(request.json)
-    print("Valor do painel:", valor)
     return valor
 
 @app.route("/", methods=["GET"])

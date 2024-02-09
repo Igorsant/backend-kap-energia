@@ -3,6 +3,7 @@ from selenium.webdriver.common.by import By
 import time
 import os
 from selenium.webdriver.support.select import Select
+from functools import reduce
 
 def visit_gtsolar(formValues):
     elementos = [
@@ -27,7 +28,7 @@ def visit_gtsolar(formValues):
         {
             "xpath": '//*[@id="app"]/div[2]/div/main/div/div/div/div/div/div[2]/div[1]/div[2]/div/div/div[2]/div[1]/input',
             "script": "type",
-            "value": float(formValues["watt"])*10,
+            "value": float(formValues["kwp"])*10,
         },
         {
             "xpath": '//*[@id="app"]/div[2]/div/main/div/div/div/div/div/div[2]/div[1]/div[2]/div/div/div[2]/div[2]/select',
@@ -59,18 +60,36 @@ def visit_gtsolar(formValues):
     servicos.click()
 
     time.sleep(1)
-    cartao_select = nav.find_element(By.XPATH, '//*[@id="app"]/div[2]/div/main/div/div/div/div/div/div[2]/div[1]/div[2]/div/div/div[1]/div/form/div[2]/div/select')
-    cartao_select.click()
-    Select(cartao_select).select_by_value(formValues["cartao"])
+    if formValues["cartao"] == "SIM":
+        cartao_select = nav.find_element(By.XPATH, '//*[@id="app"]/div[2]/div/main/div/div/div/div/div/div[2]/div[1]/div[2]/div/div/div[1]/div/form/div[2]/div/select')
+        cartao_select.click()
+        Select(cartao_select).select_by_value(formValues["cartao"])
+
+        time.sleep(1)
+        parcelas = nav.find_element(By.XPATH, '//*[@id="app"]/div[2]/div/main/div/div/div/div/div/div[2]/div[1]/div[2]/div/div/div[1]/div/form/div[3]/div/select')
+        Select(parcelas).select_by_value("21")
+        time.sleep(1)
+
+    finalizar_button = nav.find_element(By.XPATH, '//*[@id="app"]/div[2]/div/main/div/div/div/div/div/div[2]/div[1]/div[1]/button[4]')
+    finalizar_button.click()
 
     time.sleep(1)
-    parcelas = nav.find_element(By.XPATH, '//*[@id="app"]/div[2]/div/main/div/div/div/div/div/div[2]/div[1]/div[2]/div/div/div[1]/div/form/div[3]/div/select')
-    Select(parcelas).select_by_value("21")
+    table = nav.find_element(By.XPATH, '//*[@id="app"]/div[2]/div/main/div/div/div/div/div/div[2]/div[1]/div[2]/div[1]/div/div[2]/table/tbody')
+    rows = table.find_elements(By.TAG_NAME, 'tr')
+    print("Rows", rows)
 
-    time.sleep(1)
-    price = nav.find_element(By.CLASS_NAME, 'my-auto')
+    result_dict = {}
+    for row in rows:
+        row_values = row.find_elements(By.TAG_NAME, 'td')
+        key = row_values.pop(0).text
+        print(key)
+        result_dict[key] = reduce(lambda x, y: x+" "+y, map(lambda x: x.text, row_values))
+    
+    price = nav.find_element(By.XPATH, '//*[@id="orcfooter"]/div[1]/div[1]/div[2]/p[2]')
     
     print("Price is:", price.text)
+    result_dict["preço"] = price.text
 
     time.sleep(1)
-    return nav.find_element(By.XPATH, '//*[@id="orcfooter"]/div[1]/div[1]/div/p').text
+
+    return result_dict
