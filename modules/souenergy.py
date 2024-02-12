@@ -40,9 +40,9 @@ def visit_souenergy(formValues):
     
     time.sleep(3)
     actions = ActionChains(nav)
-    compre_por_marca = nav.find_element(By.XPATH, '//*[@id="ui-id-3"]')
+    compre_por_marca = nav.find_element(By.XPATH, '//span[text()="Compre por marca"]')
     actions.move_to_element(compre_por_marca).perform()
-    nav.find_element(By.XPATH, '//*[@id="ui-id-15"]').click()
+    nav.find_element(By.XPATH, '//span[text()="Solplanet"]').click()
 
     boards = nav.find_elements(By.XPATH, '//*[@id="maincontent"]/div[3]/div[1]/div[3]/ol/li')
     for board in boards:
@@ -60,18 +60,8 @@ def visit_souenergy(formValues):
     nav.execute_script("arguments[0].scrollIntoView();", best_panel)
     best_panel.click()
     print("Best panel was:", best_panel.text)
-    
-    # protecao cc
-    scroll_click_element(nav, '//*[@id="product-options-wrapper"]/div/fieldset/div[3]/div[1]/div/div[1]/label/div/span')
 
-    # cabo ca
-    scroll_click_element(nav, '//*[@id="product-options-wrapper"]/div/fieldset/div[7]/div[1]/div/div[1]/label/div')
-    
-    # aterramento
-    scroll_click_element(nav, '//*[@id="product-options-wrapper"]/div/fieldset/div[8]/div[1]/div/div[1]/label/div')
-
-    #kit
-    scroll_click_element(nav, '//*[@id="product-options-wrapper"]/div/fieldset/div[9]/div[1]/div/div[1]/label/div')
+    [scroll_click_nenhum(nav, input) for input in ['PROTEÇÃO CC', 'CABO CA', 'CABO P/ ATERRAMENTO DA ESTRUTURA', 'KIT COMPONENTES CA']]
 
     if "mini-trilho" in formValues["roof"]:
         minitrilho = nav.find_element(By.XPATH, '//span[text()="MINITRILHO EM PRFV 25cm PARA TELHADO METÁLICO - 45m/s - SOU ENERGY (GARANTIA - 25 ANOS)"]')
@@ -82,7 +72,7 @@ def visit_souenergy(formValues):
         fibrocimento.click()
         print("fibrocimento escolhido")
     if "Laje" in formValues["roof"]:
-        scroll_click_element(nav, '//*[@id="product-options-wrapper"]/div/fieldset/div[10]/div[1]/div/div[1]/label/div/span')
+        scroll_click(nav, '//*[@id="product-options-wrapper"]/div/fieldset/div[10]/div[1]/div/div[1]/label/div/span')
         laje = nav.find_element(By.XPATH, '//span[text()="KIT DE LAJE/SOLO P/ 4 MÓDULOS EM RETRATO"]')
         laje.click()
         print("laje escolhido")
@@ -103,10 +93,13 @@ def visit_souenergy(formValues):
     # time.sleep(10)
     return response_dict
 
-def scroll_click_element(nav, xpath):
+def scroll_click(nav, xpath):
     element = nav.find_element(By.XPATH, xpath)
     nav.execute_script("arguments[0].scrollIntoView();", element)
     element.click()
+
+def scroll_click_nenhum(nav, name):
+    scroll_click(nav, f'//span[text()="{name}"]/../../div/div/div/input')
 
 def _get_best_panel(nav, kwp):
     parent_panel = nav.find_element(By.XPATH, '//*[@id="product-options-wrapper"]/div/fieldset/div[2]/div/div')
