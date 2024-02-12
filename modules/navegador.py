@@ -9,6 +9,7 @@ from selenium.webdriver.support import expected_conditions as EC
 def execute_script(site = '', elementos = []):
     chrome_options = Options()
     chrome_options.add_argument("--headless")
+    chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument("--start-maximized")
     navegador = webdriver.Chrome(options=chrome_options)
     wait = WebDriverWait(navegador, timeout=10)
