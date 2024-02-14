@@ -54,14 +54,20 @@ def visit_souenergy(formValues):
             nav.execute_script("arguments[0].click();", product_link)
             break
 
-    nav.execute_script('document.querySelector(".block-bundle-summary").style.display="none"')
+    try:
+        nav.execute_script('document.querySelector(".block-bundle-summary").style.display="none"')
+    except:
+        print("couldn't remove footer")
 
     best_panel = _get_best_panel(nav, formValues["kwp"])["radio"]
     nav.execute_script("arguments[0].scrollIntoView();", best_panel)
     best_panel.click()
     print("Best panel was:", best_panel.text)
 
-    [scroll_click_nenhum(nav, input) for input in ['PROTEÇÃO CC', 'CABO CA', 'CABO P/ ATERRAMENTO DA ESTRUTURA', 'KIT COMPONENTES CA']]
+    try:
+        [scroll_click_nenhum(nav, input) for input in ['PROTEÇÃO CC', 'CABO CA', 'CABO P/ ATERRAMENTO DA ESTRUTURA', 'KIT COMPONENTES CA']]
+    except:
+        print("couldn't choose nenhum")
 
     if "mini-trilho" in formValues["roof"]:
         minitrilho = nav.find_element(By.XPATH, '//span[text()="MINITRILHO EM PRFV 25cm PARA TELHADO METÁLICO - 45m/s - SOU ENERGY (GARANTIA - 25 ANOS)"]')
@@ -72,12 +78,15 @@ def visit_souenergy(formValues):
         fibrocimento.click()
         print("fibrocimento escolhido")
     if "Laje" in formValues["roof"]:
-        scroll_click(nav, '//*[@id="product-options-wrapper"]/div/fieldset/div[10]/div[1]/div/div[1]/label/div/span')
+        scroll_click_nenhum(nav, 'KIT DE FIXAÇÃO P/ 4  PAINÉIS')
         laje = nav.find_element(By.XPATH, '//span[text()="KIT DE LAJE/SOLO P/ 4 MÓDULOS EM RETRATO"]')
         laje.click()
         print("laje escolhido")
 
-    nav.execute_script('document.querySelector(".block-bundle-summary").style.display="block"')
+    try:
+        nav.execute_script('document.querySelector(".block-bundle-summary").style.display="block"')
+    except:
+        print("couldn't put footer back")
     preco = nav.find_element(By.XPATH, '//*[@id="bundleSummary"]/div/div/div/div/div[3]/p/span')
 
     summary = nav.find_element(By.XPATH, '//*[@id="bundle-summary"]/ul')

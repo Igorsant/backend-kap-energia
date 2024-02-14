@@ -10,8 +10,8 @@ def execute_script(site = '', elementos = []):
     chrome_options = Options()
     chrome_options.add_argument("--headless")
     chrome_options.add_argument("--no-sandbox")
-    chrome_options.add_argument("--start-maximized")
     navegador = webdriver.Chrome(options=chrome_options)
+    navegador.set_window_size(1920, 1280)
     wait = WebDriverWait(navegador, timeout=10)
     
     print("navegador criado")
