@@ -37,7 +37,7 @@ def visit_souenergy(formValues):
     ]
 
     nav = navegador.execute_script("https://souenergy.com.br", elementos)
-    
+    kwp_offset = 0.09
     time.sleep(3)
     actions = ActionChains(nav)
     compre_por_marca = nav.find_element(By.XPATH, '//span[text()="Compre por marca"]')
@@ -49,7 +49,7 @@ def visit_souenergy(formValues):
         product_link = board.find_element(By.CLASS_NAME, 'product-item-link')
         text = product_link.text
         number = float(text.split(' ')[-1].replace('kWp', '').replace(",", "."))
-        if formValues["kwp"] <= number:
+        if formValues["kwp"] <= number+kwp_offset:
             nav.execute_script("arguments[0].scrollIntoView();", board)
             nav.execute_script("arguments[0].click();", product_link)
             break
@@ -59,10 +59,10 @@ def visit_souenergy(formValues):
     except:
         print("couldn't remove footer")
 
-    best_panel = _get_best_panel(nav, formValues["kwp"])["radio"]
-    nav.execute_script("arguments[0].scrollIntoView();", best_panel)
-    best_panel.click()
-    print("Best panel was:", best_panel.text)
+    best_panel = _get_best_panel(nav, formValues["kwp"], kwp_offset)
+    nav.execute_script("arguments[0].scrollIntoView();", best_panel["radio"])
+    best_panel["radio"].click()
+    print("Best panel was:", best_panel["preco"])
 
     try:
         [scroll_click_nenhum(nav, input) for input in ['PROTEÇÃO CC', 'CABO CA', 'CABO P/ ATERRAMENTO DA ESTRUTURA', 'KIT COMPONENTES CA']]
@@ -87,7 +87,7 @@ def visit_souenergy(formValues):
         nav.execute_script('document.querySelector(".block-bundle-summary").style.display="block"')
     except:
         print("couldn't put footer back")
-    preco = nav.find_element(By.XPATH, '//*[@id="bundleSummary"]/div/div/div/div/div[3]/p/span')
+    preco = best_panel["preco"]
 
     summary = nav.find_element(By.XPATH, '//*[@id="bundle-summary"]/ul')
     summary_infos = summary.find_elements(By.TAG_NAME, 'li')
@@ -97,9 +97,8 @@ def visit_souenergy(formValues):
         values = info.text.split('\n')
         print(values[0], '--->', values[1])
         response_dict[values[0]] = values[1]
-    response_dict['preco:'] = preco.text
+    response_dict['preco:'] = preco
 
-    # time.sleep(10)
     return response_dict
 
 def scroll_click(nav, xpath):
@@ -110,7 +109,7 @@ def scroll_click(nav, xpath):
 def scroll_click_nenhum(nav, name):
     scroll_click(nav, f'//span[text()="{name}"]/../../div/div/div/input')
 
-def _get_best_panel(nav, kwp):
+def _get_best_panel(nav, kwp, kwp_offset):
     parent_panel = nav.find_element(By.XPATH, '//*[@id="product-options-wrapper"]/div/fieldset/div[2]/div/div')
     nav.execute_script("arguments[0].scrollIntoView();", parent_panel)
     list_panel = parent_panel.find_elements(By.CLASS_NAME, "choice")
@@ -119,39 +118,55 @@ def _get_best_panel(nav, kwp):
         radio_button = panel.find_element(By.TAG_NAME, 'input')
         nav.execute_script("arguments[0].scrollIntoView();", radio_button)
         radio_button.click()
+        date = None
         try:
-            panels.append({
-                "radio": radio_button,
-                "kwp": nav.find_element(By.XPATH, '//*[@id="maincontent"]/div[2]/div/div[2]/span').text,
-                "preco": nav.find_element(By.XPATH, '//*[@id="bundleSummary"]/div/div/div/div/div[3]/p/span').text,
-                "date": panel.find_element(By.CLASS_NAME, 'dataPrevendaItem').text
-            })
+            date = panel.find_element(By.CLASS_NAME, 'dataPrevendaItem')
         except NoSuchElementException:
-            panels.append({
-                "radio": radio_button,
-                "kwp": nav.find_element(By.XPATH, '//*[@id="maincontent"]/div[2]/div/div[2]/span').text,
-                "preco": nav.find_element(By.XPATH, '//*[@id="bundleSummary"]/div/div/div/div/div[3]/p/span').text,
-                
-                "date": None
-            })
+            pass
+
+        if date:
+            time_numbers = date.text.split("/")
+            panel_date = datetime(int(time_numbers[2]), int(time_numbers[1]), int(time_numbers[0]))
+            now = datetime.now()
+            delta_time = timedelta(days=30)
+            if panel_date > now+delta_time:
+                continue
+        
+        plus_button = parent_panel.find_element(By.CLASS_NAME, 'fa-plus-circle')
+        for i in range(5):
+            plus_button.click()
+
+        current_kwp = nav.find_element(By.XPATH, '//*[@id="maincontent"]/div[2]/div/div[2]/span')
+        kwp_value = get_kwp_value(current_kwp.text)
+        print("kwp_value", kwp_value)
+        print("kwp", kwp)
+        minus_button = parent_panel.find_element(By.CLASS_NAME, 'fa-minus-circle')
+
+        while(kwp_value+kwp_offset > kwp):
+            print('going down')
+            minus_button.click()
+            current_kwp = nav.find_element(By.XPATH, '//*[@id="maincontent"]/div[2]/div/div[2]/span')
+            current_kwp_value = get_kwp_value(current_kwp.text)
+            print("current_kwp_value", current_kwp_value)
+            kwp_value = current_kwp_value
+
+        plus_button.click()
+        nav.execute_script('document.querySelector(".block-bundle-summary").style.display="block"')
+        panels.append({
+            "radio": radio_button,
+            "kwp": nav.find_element(By.XPATH, '//*[@id="maincontent"]/div[2]/div/div[2]/span').text,
+            "preco": nav.find_element(By.XPATH, '//*[@id="bundleSummary"]/div/div/div/div/div[3]/p/span').text,
+            "date": date.text if date else None
+        })
     panels.sort(key=lambda p:p["preco"])
-    for panel in panels:
-        kwp_panel = get_kwp_value(panel["kwp"])
-        print("kwp_panel:", kwp_panel)
-        if kwp_panel < kwp:
-            continue
-        if panel["date"] == None:
-            return panel
-        time_numbers = panel["date"].split("/")
-        print(time_numbers)
-        panel_date = datetime(int(time_numbers[2]), int(time_numbers[1]), int(time_numbers[0]))
-        now = datetime.now()
-        delta_time = timedelta(days=20)
-        if panel_date < now+delta_time:
-            print(panel["preco"], panel_date)
-            return panel
+    for p in panels:
+        print("Preco:", p["preco"])
+        print("radio", p["radio"])
+    nav.execute_script('document.querySelector(".block-bundle-summary").style.display="none"')
+    return panels[0]
         
 def get_kwp_value(kwp):
     if "\n" in kwp:
         return float(kwp.replace(",", ".").split("\n")[0])
     return float(kwp.replace(",", "."))
+    
