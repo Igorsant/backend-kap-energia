@@ -68,7 +68,7 @@ def visit_gtsolar(formValues):
 
         time.sleep(1)
         parcelas = nav.find_element(By.XPATH, '//*[@id="app"]/div[2]/div/main/div/div/div/div/div/div[2]/div[1]/div[2]/div/div/div[1]/div/form/div[3]/div/select')
-        Select(parcelas).select_by_value(str(parcelas_qtd))
+        Select(parcelas).select_by_value(parcelas_qtd)
         time.sleep(1)
 
     finalizar_button = nav.find_element(By.XPATH, '//*[@id="app"]/div[2]/div/main/div/div/div/div/div/div[2]/div[1]/div[1]/button[4]')
@@ -92,7 +92,7 @@ def visit_gtsolar(formValues):
     
     print("Price is:", price.text)
     price_float = price.text.split("R$")[1].strip().replace(".", "").replace(",", ".")
-    formatted_price = float(price_float)/parcelas_qtd
+    formatted_price = float(price_float)/int(parcelas_qtd)
     result_dict["Preço"] = f'{parcelas_qtd}x de R${"{:.2f}".format(formatted_price).replace(".", ",")}'
 
     time.sleep(1)

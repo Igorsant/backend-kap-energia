@@ -14,15 +14,25 @@ def authenticate():
 @app.route("/gtsolar", methods=["POST"])
 def search_gtsolar():
     authenticate()
-    valor = gt_solar.visit_gtsolar(request.json)
-    print("Valor do painel:", valor)
-    return valor
+    try:
+        valor = gt_solar.visit_gtsolar(request.json)
+        print("Valor do painel", valor)
+        return valor
+    except Exception as e:
+        print(e)
+        return "Message: Error na rota /gtsolar", 500
+    
 
 @app.route("/souenergy", methods=["POST"])
 def search_souenergy():
     authenticate()
-    valor = souenergy.visit_souenergy(request.json)
-    return valor
+    try:
+        valor = souenergy.visit_souenergy(request.json)
+        print("Valor do painel", valor)
+        return valor
+    except Exception as e:
+        print(e)
+        return "Message: Error na rota /souenergy", 500
 
 @app.route("/", methods=["GET"])
 def hello_heroku():
