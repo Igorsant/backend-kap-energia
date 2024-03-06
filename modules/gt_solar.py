@@ -58,6 +58,7 @@ def visit_gtsolar(formValues):
 
     servicos = nav.find_element(By.XPATH, '//*[@id="app"]/div[2]/div/main/div/div/div/div/div/div[2]/div[1]/div[1]/button[3]')
     servicos.click()
+    parcelas_qtd = formValues["parcelas"]
 
     time.sleep(1)
     if formValues["cartao"] == "SIM":
@@ -67,7 +68,7 @@ def visit_gtsolar(formValues):
 
         time.sleep(1)
         parcelas = nav.find_element(By.XPATH, '//*[@id="app"]/div[2]/div/main/div/div/div/div/div/div[2]/div[1]/div[2]/div/div/div[1]/div/form/div[3]/div/select')
-        Select(parcelas).select_by_value("21")
+        Select(parcelas).select_by_value(str(parcelas_qtd))
         time.sleep(1)
 
     finalizar_button = nav.find_element(By.XPATH, '//*[@id="app"]/div[2]/div/main/div/div/div/div/div/div[2]/div[1]/div[1]/button[4]')
@@ -82,13 +83,17 @@ def visit_gtsolar(formValues):
     for row in rows:
         row_values = row.find_elements(By.TAG_NAME, 'td')
         key = row_values.pop(0).text
+        if key == "Alerta!!":
+            continue
         print(key)
         result_dict[key] = reduce(lambda x, y: x+" "+y, map(lambda x: x.text, row_values))
     
     price = nav.find_element(By.XPATH, '//*[@id="orcfooter"]/div[1]/div[1]/div[2]/p[2]')
     
     print("Price is:", price.text)
-    result_dict["preço"] = price.text
+    price_float = price.text.split("R$")[1].strip().replace(".", "").replace(",", ".")
+    formatted_price = float(price_float)/parcelas_qtd
+    result_dict["Preço"] = f'{parcelas_qtd}x de R${"{:.2f}".format(formatted_price).replace(".", ",")}'
 
     time.sleep(1)
 

@@ -59,13 +59,10 @@ def visit_souenergy(formValues):
     except:
         print("couldn't remove footer")
 
-    best_panel = _get_best_panel(nav, formValues["kwp"], kwp_offset)
-    nav.execute_script("arguments[0].scrollIntoView();", best_panel["radio"])
-    best_panel["radio"].click()
-    print("Best panel was:", best_panel["preco"])
+    date = _get_best_panel(nav, formValues["kwp"], kwp_offset)
 
     try:
-        [scroll_click_nenhum(nav, input) for input in ['PROTEÇÃO CC', 'CABO CA', 'CABO P/ ATERRAMENTO DA ESTRUTURA', 'KIT COMPONENTES CA']]
+        [scroll_click_nenhum(nav, input) for input in ['PROTEÇÃO CC', 'CABO SOLAR PRETO', 'CABO SOLAR VERMELHO']]
     except:
         print("couldn't choose nenhum")
 
@@ -87,7 +84,7 @@ def visit_souenergy(formValues):
         nav.execute_script('document.querySelector(".block-bundle-summary").style.display="block"')
     except:
         print("couldn't put footer back")
-    preco = best_panel["preco"]
+    preco = nav.find_element(By.XPATH, '//*[@id="bundleSummary"]/div/div/div/div/div[3]/p/span')
 
     summary = nav.find_element(By.XPATH, '//*[@id="bundle-summary"]/ul')
     summary_infos = summary.find_elements(By.TAG_NAME, 'li')
@@ -97,7 +94,12 @@ def visit_souenergy(formValues):
         values = info.text.split('\n')
         print(values[0], '--->', values[1])
         response_dict[values[0]] = values[1]
-    response_dict['preco:'] = preco
+
+    print(preco.text)
+    float_price = preco.text.split("R$")[1].replace(".", "").replace(",", ".")
+    formatted_price = "{:.2f}".format(float(float_price)/12)
+    response_dict['Preço:'] = f'12x de R${formatted_price.replace(".", ",")}'
+    response_dict['Previsão de entrega:'] = date
 
     return response_dict
 
@@ -107,6 +109,7 @@ def scroll_click(nav, xpath):
     element.click()
 
 def scroll_click_nenhum(nav, name):
+    print(name)
     scroll_click(nav, f'//span[text()="{name}"]/../../div/div/div/input')
 
 def _get_best_panel(nav, kwp, kwp_offset):
@@ -131,26 +134,9 @@ def _get_best_panel(nav, kwp, kwp_offset):
             delta_time = timedelta(days=30)
             if panel_date > now+delta_time:
                 continue
+
+        number_modules(parent_panel, kwp, kwp_offset, nav)
         
-        plus_button = parent_panel.find_element(By.CLASS_NAME, 'fa-plus-circle')
-        for i in range(5):
-            plus_button.click()
-
-        current_kwp = nav.find_element(By.XPATH, '//*[@id="maincontent"]/div[2]/div/div[2]/span')
-        kwp_value = get_kwp_value(current_kwp.text)
-        print("kwp_value", kwp_value)
-        print("kwp", kwp)
-        minus_button = parent_panel.find_element(By.CLASS_NAME, 'fa-minus-circle')
-
-        while(kwp_value+kwp_offset > kwp):
-            print('going down')
-            minus_button.click()
-            current_kwp = nav.find_element(By.XPATH, '//*[@id="maincontent"]/div[2]/div/div[2]/span')
-            current_kwp_value = get_kwp_value(current_kwp.text)
-            print("current_kwp_value", current_kwp_value)
-            kwp_value = current_kwp_value
-
-        plus_button.click()
         nav.execute_script('document.querySelector(".block-bundle-summary").style.display="block"')
         panels.append({
             "radio": radio_button,
@@ -163,7 +149,31 @@ def _get_best_panel(nav, kwp, kwp_offset):
         print("Preco:", p["preco"])
         print("radio", p["radio"])
     nav.execute_script('document.querySelector(".block-bundle-summary").style.display="none"')
-    return panels[0]
+    panels[0]["radio"].click()
+    print(panels[0]["preco"])
+    number_modules(parent_panel, kwp, kwp_offset, nav)
+    return panels[0]["date"]
+
+def number_modules(parent_panel, kwp, kwp_offset, nav):
+    plus_button = parent_panel.find_element(By.CLASS_NAME, 'fa-plus-circle')
+    for i in range(5):
+        plus_button.click()
+
+    current_kwp = nav.find_element(By.XPATH, '//*[@id="maincontent"]/div[2]/div/div[2]/span')
+    kwp_value = get_kwp_value(current_kwp.text)
+    print("kwp_value", kwp_value)
+    print("kwp", kwp)
+    minus_button = parent_panel.find_element(By.CLASS_NAME, 'fa-minus-circle')
+
+    while(kwp_value+kwp_offset > kwp):
+        print('going down')
+        minus_button.click()
+        current_kwp = nav.find_element(By.XPATH, '//*[@id="maincontent"]/div[2]/div/div[2]/span')
+        current_kwp_value = get_kwp_value(current_kwp.text)
+        print("current_kwp_value", current_kwp_value)
+        kwp_value = current_kwp_value
+
+    plus_button.click()
         
 def get_kwp_value(kwp):
     if "\n" in kwp:

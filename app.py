@@ -38,7 +38,6 @@ def create_luvik():
 def auth():
     authenticate()
     return jsonify({'message': 'Success!'})
-    
 
 if __name__ == "__main__":
     from waitress import serve
