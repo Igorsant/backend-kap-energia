@@ -41,18 +41,11 @@ def visit_souenergy(formValues):
     time.sleep(3)
     actions = ActionChains(nav)
     compre_por_marca = nav.find_element(By.XPATH, '//span[text()="Compre por marca"]')
+
     actions.move_to_element(compre_por_marca).perform()
     nav.find_element(By.XPATH, '//span[text()="Solplanet"]').click()
 
-    boards = nav.find_elements(By.XPATH, '//*[@id="maincontent"]/div[3]/div[1]/div[3]/ol/li')
-    for board in boards:
-        product_link = board.find_element(By.CLASS_NAME, 'product-item-link')
-        text = product_link.text
-        number = float(text.split(' ')[-1].replace('kWp', '').replace(",", "."))
-        if formValues["kwp"] <= number+kwp_offset:
-            nav.execute_script("arguments[0].scrollIntoView();", board)
-            nav.execute_script("arguments[0].click();", product_link)
-            break
+    get_best_board(nav, formValues, kwp_offset)
 
     try:
         nav.execute_script('document.querySelector(".block-bundle-summary").style.display="none"')
@@ -99,7 +92,8 @@ def visit_souenergy(formValues):
     float_price = preco.text.split("R$")[1].replace(".", "").replace(",", ".")
     formatted_price = "{:.2f}".format(float(float_price)/12)
     response_dict['Preço:'] = f'12x de R${formatted_price.replace(".", ",")}'
-    response_dict['Previsão de entrega:'] = date
+    if date:
+        response_dict['Previsão de entrega:'] = date
 
     return response_dict
 
@@ -112,8 +106,24 @@ def scroll_click_nenhum(nav, name):
     print(name)
     scroll_click(nav, f'//span[text()="{name}"]/../../div/div/div/input')
 
+def get_best_board(nav, formValues, kwp_offset):
+    for i in range(4):
+        boards = nav.find_elements(By.XPATH, '//*[@id="maincontent"]/div[3]/div[1]/div[3]/ol/li')
+        boards.sort(key=lambda b: b.find_element(By.CLASS_NAME, 'price').text)
+        for board in boards:
+            product_link = board.find_element(By.CLASS_NAME, 'product-item-link')
+            text = product_link.text
+            number = float(text.split(' ')[-1].replace('kWp', '').replace(",", "."))
+            if formValues["kwp"] <= number+kwp_offset:
+                nav.execute_script("arguments[0].scrollIntoView();", board)
+                nav.execute_script("arguments[0].click();", product_link)
+                return
+        print("Didn find a board in this page")
+        link = nav.find_elements(By.XPATH, '//*[@id="maincontent"]/div[3]/div[1]/div[4]/div[2]/ul/li[@class="item"]/a')[i]
+        link.click()
+
 def _get_best_panel(nav, kwp, kwp_offset):
-    parent_panel = nav.find_element(By.XPATH, '//*[@id="product-options-wrapper"]/div/fieldset/div[2]/div/div')
+    parent_panel = nav.find_element(By.XPATH, '//span[text()="PAINEL FOTOVOLTAICO"]/../../div')
     nav.execute_script("arguments[0].scrollIntoView();", parent_panel)
     list_panel = parent_panel.find_elements(By.CLASS_NAME, "choice")
     panels = []
@@ -135,7 +145,8 @@ def _get_best_panel(nav, kwp, kwp_offset):
             if panel_date > now+delta_time:
                 continue
 
-        number_modules(parent_panel, kwp, kwp_offset, nav)
+        if not(number_modules(parent_panel, kwp, kwp_offset, nav)):
+            continue
         
         nav.execute_script('document.querySelector(".block-bundle-summary").style.display="block"')
         panels.append({
@@ -144,11 +155,12 @@ def _get_best_panel(nav, kwp, kwp_offset):
             "preco": nav.find_element(By.XPATH, '//*[@id="bundleSummary"]/div/div/div/div/div[3]/p/span').text,
             "date": date.text if date else None
         })
+        nav.execute_script('document.querySelector(".block-bundle-summary").style.display="none"')
     panels.sort(key=lambda p:p["preco"])
     for p in panels:
         print("Preco:", p["preco"])
         print("radio", p["radio"])
-    nav.execute_script('document.querySelector(".block-bundle-summary").style.display="none"')
+
     panels[0]["radio"].click()
     print(panels[0]["preco"])
     number_modules(parent_panel, kwp, kwp_offset, nav)
@@ -156,13 +168,24 @@ def _get_best_panel(nav, kwp, kwp_offset):
 
 def number_modules(parent_panel, kwp, kwp_offset, nav):
     plus_button = parent_panel.find_element(By.CLASS_NAME, 'fa-plus-circle')
-    for i in range(5):
-        plus_button.click()
-
+    current_qtd = parent_panel.find_element(By.CLASS_NAME, 'irs-single').text
+    aux_qtd = ""
     current_kwp = nav.find_element(By.XPATH, '//*[@id="maincontent"]/div[2]/div/div[2]/span')
+    print(current_qtd)
+    
+    while(aux_qtd != current_qtd):
+        current_kwp = nav.find_element(By.XPATH, '//*[@id="maincontent"]/div[2]/div/div[2]/span')
+        curr_kwp_value = get_kwp_value(current_kwp.text)
+        if curr_kwp_value+kwp_offset > kwp:
+            break
+        plus_button.click()
+        aux_qtd = current_qtd
+        current_qtd = parent_panel.find_element(By.CLASS_NAME, 'irs-single').text
+        
     kwp_value = get_kwp_value(current_kwp.text)
-    print("kwp_value", kwp_value)
-    print("kwp", kwp)
+    if kwp_value+kwp_offset < kwp:
+        return False
+
     minus_button = parent_panel.find_element(By.CLASS_NAME, 'fa-minus-circle')
 
     while(kwp_value+kwp_offset > kwp):
@@ -170,10 +193,10 @@ def number_modules(parent_panel, kwp, kwp_offset, nav):
         minus_button.click()
         current_kwp = nav.find_element(By.XPATH, '//*[@id="maincontent"]/div[2]/div/div[2]/span')
         current_kwp_value = get_kwp_value(current_kwp.text)
-        print("current_kwp_value", current_kwp_value)
         kwp_value = current_kwp_value
 
     plus_button.click()
+    return True
         
 def get_kwp_value(kwp):
     if "\n" in kwp:
