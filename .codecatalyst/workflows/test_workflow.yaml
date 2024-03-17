@@ -17,4 +17,4 @@ Actions:
         Configuration:
             Steps:
             - Run: echo "Hello Test Workflow"
-            - Run: yarn --version
+            - Run: npm --version
