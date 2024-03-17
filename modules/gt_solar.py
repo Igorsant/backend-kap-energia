@@ -58,7 +58,7 @@ def visit_gtsolar(formValues):
 
     servicos = nav.find_element(By.XPATH, '//*[@id="app"]/div[2]/div/main/div/div/div/div/div/div[2]/div[1]/div[1]/button[3]')
     servicos.click()
-    parcelas_qtd = formValues["parcelas"]
+    parcelas_qtd = str(formValues["parcelas"])
 
     time.sleep(1)
     if formValues["cartao"] == "SIM":

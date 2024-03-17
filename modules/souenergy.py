@@ -52,8 +52,8 @@ def visit_souenergy(formValues):
     except:
         print("couldn't remove footer")
 
-    date = _get_best_panel(nav, formValues["kwp"], kwp_offset)
-
+    date = compare_date_inversor(_get_best_panel(nav, formValues["kwp"], kwp_offset), nav)
+    
     try:
         [scroll_click_nenhum(nav, input) for input in ['PROTEÇÃO CC', 'CABO SOLAR PRETO', 'CABO SOLAR VERMELHO']]
     except:
@@ -107,9 +107,15 @@ def scroll_click_nenhum(nav, name):
     scroll_click(nav, f'//span[text()="{name}"]/../../div/div/div/input')
 
 def get_best_board(nav, formValues, kwp_offset):
+    def sort_boards(b):
+        price_float = float(b.find_element(By.CLASS_NAME, 'price').text.replace("R$", "").replace(".", "").replace(",", "."))
+        return price_float
     for i in range(4):
         boards = nav.find_elements(By.XPATH, '//*[@id="maincontent"]/div[3]/div[1]/div[3]/ol/li')
-        boards.sort(key=lambda b: b.find_element(By.CLASS_NAME, 'price').text)
+        boards.sort(key=lambda b: sort_boards(b))
+        
+        for board in boards:
+            print(board.find_element(By.CLASS_NAME, 'price').text)
         for board in boards:
             product_link = board.find_element(By.CLASS_NAME, 'product-item-link')
             text = product_link.text
@@ -202,4 +208,17 @@ def get_kwp_value(kwp):
     if "\n" in kwp:
         return float(kwp.replace(",", ".").split("\n")[0])
     return float(kwp.replace(",", "."))
-    
+
+def compare_date_inversor(date_panel, nav):
+    date_array = date_panel.split("/")
+    date = datetime(int(date_array[2]), int(date_array[1]), int(date_array[0]))
+    div_inversor = nav.find_element(By.XPATH, '//span[text()="INVERSOR"]/../../div')
+    try:
+        date_inversor_text = div_inversor.find_element(By.CLASS_NAME, 'dataPrevendaItem').text
+        date_inversor_array = date_inversor_text.split("/")
+        date_inversor = datetime(int(date_inversor_array[2]), int(date_inversor_array[1]), int(date_inversor_array[0]))
+        if date_inversor > date:
+            return date_inversor_text
+        return date_panel
+    except NoSuchElementException:
+        return date_panel
